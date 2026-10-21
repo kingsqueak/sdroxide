@@ -183,6 +183,11 @@ pub(crate) struct Shared {
     pub last_rx_ms: AtomicU64,
     /// The second chain's clock, stamped only while its ring is attached.
     pub last_rx1_ms: AtomicU64,
+    /// Milliseconds since [`Self::opened_at`] when the last over ended, or 0.
+    /// A half-duplex over stands receive down for its whole length, so the
+    /// receive clocks above are that far behind the moment it ends; silence is
+    /// counted from whichever is later.
+    pub last_tx_end_ms: AtomicU64,
     pub transmitting: AtomicBool,
     /// Receive and transmit may hold the link at the same time — see this
     /// module's header. Fixed for the life of the connection: it describes the
@@ -643,6 +648,7 @@ impl PlutoRig {
             opened_at: Instant::now(),
             last_rx_ms: AtomicU64::new(0),
             last_rx1_ms: AtomicU64::new(0),
+            last_tx_end_ms: AtomicU64::new(0),
             transmitting: AtomicBool::new(false),
             full_duplex,
             tdd: tr.tdd,
@@ -1070,7 +1076,10 @@ impl PlutoRx {
     pub fn tx_end(&self) {
         if self.tx.is_some() {
             tracing::info!("PlutoSDR: TX end");
-            self.rig.shared.transmitting.store(false, Ordering::Relaxed);
+            let shared = &self.rig.shared;
+            let now_ms = shared.opened_at.elapsed().as_millis() as u64;
+            shared.last_tx_end_ms.store(now_ms, Ordering::Relaxed);
+            shared.transmitting.store(false, Ordering::Relaxed);
             let _ = self.rig.ctrl.send(Ctrl::TxOff);
         }
     }
@@ -1161,8 +1170,8 @@ impl PlutoRx {
         }
         let clock = if self.chain == 0 { &shared.last_rx_ms } else { &shared.last_rx1_ms };
         let since_open = shared.opened_at.elapsed();
-        let last = Duration::from_millis(clock.load(Ordering::Relaxed));
-        since_open.saturating_sub(last)
+        let last = clock.load(Ordering::Relaxed).max(shared.last_tx_end_ms.load(Ordering::Relaxed));
+        since_open.saturating_sub(Duration::from_millis(last))
     }
 }
 
