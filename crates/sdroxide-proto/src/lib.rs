@@ -1609,7 +1609,11 @@ use sdroxide_types::{
 /// so a v185 peer reads the extra bytes as the start of the next field and
 /// fails to decode every digital status, the same break as every appended field
 /// before it.
-pub const PROTO_VERSION: u16 = 186;
+///
+/// v187: a band-plan sub-segment carries an optional `label` (the operator's
+/// own name for it on the waterfall strip), so the `band_plan` in
+/// `StationConfig` changes layout and both ends have to agree.
+pub const PROTO_VERSION: u16 = 187;
 const VERSION_BYTE: u8 = 0x12;
 
 #[derive(Debug, thiserror::Error)]
