@@ -47,8 +47,11 @@ fn build() -> Vec<SatFreqs> {
                     P::range(10489.500, 10490.000),
                 )
                 .note("non-inverting; 2.4 GHz up, 10 GHz down"),
-                down("NB lower beacon", "CW", P::at(10489.500)),
-                down("NB upper beacon", "BPSK 400bd", P::at(10489.800)),
+                // Beacon blocks as in the AMSAT-DL band plan.
+                down("NB lower beacon", "CW", P::range(10489.500, 10489.505)),
+                down("NB middle beacon", "BPSK 400bd", P::at(10489.750))
+                    .note("multimedia beacon; the frequency reference"),
+                down("NB upper beacon", "CW", P::range(10489.990, 10490.000)),
                 duplex(
                     "WB transponder",
                     "DVB-S2",
