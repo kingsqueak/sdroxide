@@ -1119,7 +1119,7 @@ impl SdroxideApp {
             if pane.is_none_or(|p| p != 0) {
                 ui.allocate_ui(egui::vec2(tx_w, full_h), |ui| {
                     sstv_section(ui, &tr!("sstv-transmit"), egui::vec2(tx_w, full_h), |ui| {
-                        // The compositor is a fixed stack — the five slots, the
+                        // The compositor is a fixed stack — the ten slots, the
                         // load buttons, the preview, the message box and the
                         // transmit controls — and none of it can be dropped
                         // without dropping a control. On a screen with less height
@@ -1133,96 +1133,116 @@ impl SdroxideApp {
                             .show_themed(ui, |ui| {
                                 let inner_w = tx_w - 16.0;
 
-                                ui.horizontal(|ui| {
-                                    ui.spacing_mut().item_spacing.x = 5.0;
-                                    for i in 0..IMAGE_SLOTS {
-                                        let sel = self.sstv.selected_slot == i;
-                                        let size = egui::vec2(70.0, 54.0);
-                                        let resp = if let Some(tex) =
-                                            self.sstv.slot_thumbs.get(i).and_then(|t| t.as_ref())
+                                // Five to a row, shrunk to fit a narrow column
+                                // rather than run off its edge (issue #753). The
+                                // clip rect too: on a small window the column
+                                // itself is wider than what is on screen.
+                                const PER_ROW: usize = 5;
+                                let row_w = ui
+                                    .available_width()
+                                    .min(ui.clip_rect().right() - ui.cursor().left());
+                                let thumb_w =
+                                    ((row_w - 4.0 * 5.0 - 1.0) / PER_ROW as f32).clamp(30.0, 70.0);
+                                for row in 0..IMAGE_SLOTS.div_ceil(PER_ROW) {
+                                    ui.horizontal(|ui| {
+                                        ui.spacing_mut().item_spacing.x = 5.0;
+                                        for i in
+                                            row * PER_ROW..((row + 1) * PER_ROW).min(IMAGE_SLOTS)
                                         {
-                                            ui.add(
-                                                egui::Image::new(tex)
-                                                    .fit_to_exact_size(size)
-                                                    .corner_radius(2.0)
-                                                    .sense(egui::Sense::click()),
-                                            )
-                                        } else {
-                                            let (rect, resp) =
-                                                ui.allocate_exact_size(size, egui::Sense::click());
-                                            ui.painter().rect_stroke(
-                                                rect,
+                                            let sel = self.sstv.selected_slot == i;
+                                            let size = egui::vec2(thumb_w, thumb_w * 54.0 / 70.0);
+                                            let resp = if let Some(tex) = self
+                                                .sstv
+                                                .slot_thumbs
+                                                .get(i)
+                                                .and_then(|t| t.as_ref())
+                                            {
+                                                ui.add(
+                                                    egui::Image::new(tex)
+                                                        .fit_to_exact_size(size)
+                                                        .corner_radius(2.0)
+                                                        .sense(egui::Sense::click()),
+                                                )
+                                            } else {
+                                                let (rect, resp) = ui.allocate_exact_size(
+                                                    size,
+                                                    egui::Sense::click(),
+                                                );
+                                                ui.painter().rect_stroke(
+                                                    rect,
+                                                    2.0,
+                                                    egui::Stroke::new(1.0, crate::theme::gray(70)),
+                                                    egui::StrokeKind::Inside,
+                                                );
+                                                ui.painter().text(
+                                                    rect.center(),
+                                                    egui::Align2::CENTER_CENTER,
+                                                    "+",
+                                                    egui::FontId::proportional(22.0),
+                                                    crate::theme::gray(110),
+                                                );
+                                                resp
+                                            };
+                                            // Active-tab highlight: a cyan wash + heavier border so
+                                            // it is obvious which slot the message box targets.
+                                            if sel {
+                                                ui.painter().rect_filled(
+                                                    resp.rect,
+                                                    2.0,
+                                                    Color32::from_rgba_unmultiplied(
+                                                        0x00, 0xd0, 0xf4, 34,
+                                                    ),
+                                                );
+                                                ui.painter().rect_stroke(
+                                                    resp.rect,
+                                                    2.0,
+                                                    egui::Stroke::new(2.5, crate::theme::CYAN()),
+                                                    egui::StrokeKind::Outside,
+                                                );
+                                            }
+                                            // Slot number badge (1..10), like a tab label.
+                                            let badge = egui::Rect::from_min_size(
+                                                resp.rect.left_top() + egui::vec2(2.0, 2.0),
+                                                egui::vec2(15.0, 13.0),
+                                            );
+                                            ui.painter().rect_filled(
+                                                badge,
                                                 2.0,
-                                                egui::Stroke::new(1.0, crate::theme::gray(70)),
-                                                egui::StrokeKind::Inside,
+                                                Color32::from_black_alpha(150),
                                             );
                                             ui.painter().text(
-                                                rect.center(),
+                                                badge.center(),
                                                 egui::Align2::CENTER_CENTER,
-                                                "+",
-                                                egui::FontId::proportional(22.0),
-                                                crate::theme::gray(110),
+                                                format!("{}", i + 1),
+                                                egui::FontId::proportional(10.0),
+                                                if sel {
+                                                    crate::theme::CYAN()
+                                                } else {
+                                                    crate::theme::gray(170)
+                                                },
                                             );
-                                            resp
-                                        };
-                                        // Active-tab highlight: a cyan wash + heavier border so
-                                        // it is obvious which slot the message box targets.
-                                        if sel {
-                                            ui.painter().rect_filled(
-                                                resp.rect,
-                                                2.0,
-                                                Color32::from_rgba_unmultiplied(
-                                                    0x00, 0xd0, 0xf4, 34,
-                                                ),
-                                            );
-                                            ui.painter().rect_stroke(
-                                                resp.rect,
-                                                2.0,
-                                                egui::Stroke::new(2.5, crate::theme::CYAN()),
-                                                egui::StrokeKind::Outside,
-                                            );
-                                        }
-                                        // Slot number badge (1..5), like a tab label.
-                                        let badge = egui::Rect::from_min_size(
-                                            resp.rect.left_top() + egui::vec2(2.0, 2.0),
-                                            egui::vec2(15.0, 13.0),
-                                        );
-                                        ui.painter().rect_filled(
-                                            badge,
-                                            2.0,
-                                            Color32::from_black_alpha(150),
-                                        );
-                                        ui.painter().text(
-                                            badge.center(),
-                                            egui::Align2::CENTER_CENTER,
-                                            format!("{}", i + 1),
-                                            egui::FontId::proportional(10.0),
-                                            if sel {
-                                                crate::theme::CYAN()
-                                            } else {
-                                                crate::theme::gray(170)
-                                            },
-                                        );
-                                        let resp = resp
-                                            .on_hover_text(tr!("sstv-click-edit-slot-s-message"));
-                                        if resp.double_clicked() {
-                                            self.sstv.pick_target = Some(i);
-                                            pick_image(self.sstv.inbox.clone());
-                                        } else if resp.clicked() && !sel {
-                                            // Hand the slot we are leaving back to the
-                                            // engine before moving on, so an edit is never
-                                            // lost to a click.
-                                            cmds.extend(crate::sstv::claim_message(
-                                                &mut self.sstv.msg_edit,
-                                                &mut self.sstv.msg_sent,
-                                                &self.sstv.presets,
-                                                i,
+                                            let resp = resp.on_hover_text(tr!(
+                                                "sstv-click-edit-slot-s-message"
                                             ));
-                                            self.sstv.selected_slot = i;
-                                            self.sstv.preview_dirty = true;
+                                            if resp.double_clicked() {
+                                                self.sstv.pick_target = Some(i);
+                                                pick_image(self.sstv.inbox.clone());
+                                            } else if resp.clicked() && !sel {
+                                                // Hand the slot we are leaving back to the
+                                                // engine before moving on, so an edit is never
+                                                // lost to a click.
+                                                cmds.extend(crate::sstv::claim_message(
+                                                    &mut self.sstv.msg_edit,
+                                                    &mut self.sstv.msg_sent,
+                                                    &self.sstv.presets,
+                                                    i,
+                                                ));
+                                                self.sstv.selected_slot = i;
+                                                self.sstv.preview_dirty = true;
+                                            }
                                         }
-                                    }
-                                });
+                                    });
+                                }
                                 ui.add_space(5.0);
 
                                 // Load/replace/clear the active slot's picture.

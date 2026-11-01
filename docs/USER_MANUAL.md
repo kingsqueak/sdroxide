@@ -4605,7 +4605,7 @@ one of the two.
 
 **Transmitting:**
 
-- The **TRANSMIT** side has five image slots that work like **tabs**. **Click** a
+- The **TRANSMIT** side has ten image slots, in two rows, that work like **tabs**. **Click** a
   slot to make it the active tab (highlighted with a cyan border and its number);
   the message box below then edits *that slot's* message. Use the **Load image…**
   button (or **double-click** a slot) to pick an image file, which is
@@ -4691,7 +4691,7 @@ continuous-phase binary FSK, 4800 baud, ±4 kHz deviation, in a channel about
 25 kHz wide. **The dial is the middle of the signal, not its lower edge.**
 
 The panel is the SSTV panel — the same live picture, the same received gallery,
-the same five transmit slots with their own overlay messages — with a RIFP
+the same ten transmit slots with their own overlay messages — with a RIFP
 control strip in place of the SSTV mode buttons. Pictures you load are shared
 between the two modes.
 
@@ -15418,12 +15418,12 @@ and not the station's.
 | `relay.json` | JSON | The station's external transmit/receive switch ([§6.11](#611-tr-switch-protecting-the-receiver-on-transmit)): which relay board or contact closure, the contact table, the sequencer's lead and hold times, what to do if it stops answering, and the transmit sense input. Belongs to the engine — the relay is bolted to the antenna — so remote and browser clients set up the real one. |
 | `broadcast_stations.json` | JSON | *Your own* broadcast stations and corrections, merged over the downloaded schedule ([§10.6](#106-broadcast-stations-on-longwave-and-shortwave)). Never written by sdroxide, and absent until you create it. |
 | `broadcast/` | CSV | The broadcasting season's schedule as downloaded from eibispace.de, one file per season. Managed by sdroxide: refetched when the season changes, and safe to delete. |
-| `sstv_messages.json` | JSON | The overlay message stored for each of the five SSTV transmit slots. |
+| `sstv_messages.json` | JSON | The overlay message stored for each of the ten SSTV transmit slots. |
 | `hfdl_channels.json` | JSON | Your own HFDL frequency chips, in kHz ([§3.19](#319-hfdl-aircraft-on-shortwave)). |
 | `voice_names.json` | JSON | The label given to each of the ten voice-keyer slots. |
 | `voice/` | dir | The voice-keyer recordings (`slot1.wav`…`slot10.wav`), 48 kHz mono. Drop your own WAV in to replace a message. |
 | `speech_voices/` | dir | Extra voices for the spoken announcements: a Piper `.onnx` model and its `.onnx.json` config, side by side. Absent until you create it — the shipped voice lives with the program, not here. Note this is *not* `voice/`, which is the voice keyer. |
-| `sstv_tx/` | dir | The five SSTV transmit-image slots (`slot0.png`…`slot4.png`). |
+| `sstv_tx/` | dir | The ten SSTV transmit-image slots (`slot0.png`…`slot9.png`). |
 | `sstv_rx/` | dir | Received SSTV and RIFP pictures, kept for the gallery. |
 | `wefax_rx/` | dir | Weather-fax charts received by an earlier version. Charts now go to `~/Pictures/sdroxide/wefax/`, but this is still read so an existing collection stays in the gallery. |
 | `solar/` | dir | Cached solar imagery, space-weather JSON and subscribed element-set listings for the 3D view, with an index of HTTP validators so refreshes stay cheap. Safe to delete; it is re-fetched on demand. |
