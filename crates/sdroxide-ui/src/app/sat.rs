@@ -571,12 +571,15 @@ fn pass_diagram(ui: &mut egui::Ui, curve: &PassCurve, now: i64, height: f32) {
 
 /// The mode a link's published emission maps onto. Satellite SSB convention
 /// is USB on the downlink, whatever the band. An SSTV downlink is FM on V/UHF,
-/// and tuning it as plain NFM would leave the picture undecoded (#622).
+/// and tuning it as plain NFM would leave the picture undecoded (#622). A
+/// 1k2 AFSK link is packet on FM, so it tunes in the APRS mode (#651).
 fn mode_for_link(l: &sdroxide_types::SatLink) -> Mode {
     let m = l.mode.to_ascii_uppercase();
     let sstv = m.contains("SSTV") || l.label.to_ascii_uppercase().contains("SSTV");
     if sstv && m.contains("FM") {
         Mode::SstvFm
+    } else if m.contains("AFSK") {
+        Mode::Aprs
     } else if m.contains("FM") || m.contains("APT") {
         Mode::Nfm
     } else if m.contains("SSB") || m.contains("BPSK") || m.contains("GMSK") || m.contains("AX.25") {
@@ -1439,5 +1442,12 @@ mod tests {
         // Voice stays voice.
         let voice = SatLink::down("FM voice", "FM", Passband::at(145.800));
         assert_eq!(mode_for_link(&voice), Mode::Nfm);
+    }
+
+    /// Issue #651: the ISS APRS digipeater is 1k2 AFSK on FM, not USB.
+    #[test]
+    fn an_afsk_link_tunes_in_aprs() {
+        let aprs = SatLink::down("APRS digipeater", "AX.25 1k2 AFSK", Passband::at(145.825));
+        assert_eq!(mode_for_link(&aprs), Mode::Aprs);
     }
 }
