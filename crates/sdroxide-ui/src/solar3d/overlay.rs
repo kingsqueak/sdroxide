@@ -785,10 +785,8 @@ fn scene(ui: &mut egui::Ui, st: &mut SolarUi, data: Option<&SolarData>) {
         let below = weather.map_or(below, |r| r.bottom() + 8.0);
         let _ = bands_panel(ui, st, Place::Corner { scene: rect, top: below });
     }
-    // The bottom-right stack, from the corner up: the date, then the award key
-    // above whatever the date left.
-    let date_rect = date_readout(ui, st, rect, sim_now);
-    award_panel(ui, st, rect, date_rect.map_or(rect.bottom() - MARGIN, |r| r.top() - 8.0));
+    // The award key in the bottom-right corner; the date is on the clock.
+    award_panel(ui, st, rect, rect.bottom() - MARGIN);
     clouds_note(ui, st, data, rect, sim_now as i64);
     impact_banner(ui, data, rect, sim_now as i64);
     pass_window(ui, st, data, sim_now);
@@ -1530,6 +1528,9 @@ fn hhmm(unix: i64) -> String {
 /// time is the row underneath because "is that pass at a civilised hour?" is a
 /// question about the wall clock in the shack, and doing that subtraction in
 /// your head is how a pass gets missed.
+///
+/// Each row carries its own date, so the two zones falling on different days
+/// reads at a glance, beside the time it belongs to (#686).
 fn clock(ui: &egui::Ui, rect: egui::Rect, sim_now: f64, scrubbed: bool) -> Option<egui::Rect> {
     use super::dotmatrix;
 
@@ -1537,11 +1538,18 @@ fn clock(ui: &egui::Ui, rect: egui::Rect, sim_now: f64, scrubbed: bool) -> Optio
         let (_, _, _, h, m, s) = sdroxide_types::utc_ymd_hms(unix);
         format!("{h:02}:{m:02}:{s:02}")
     };
+    // ISO order: the matrix has digits and a dash, and no month names.
+    let ymd = |unix: i64| {
+        let (y, mo, d, _, _, _) = sdroxide_types::utc_ymd_hms(unix);
+        format!("{y:04}-{mo:02}-{d:02}")
+    };
     let utc = sim_now as i64;
     let text = hms(utc);
     // The scrubbed instant, not the wall clock: two clocks side by side that
     // disagreed about when "now" is would read as one of them being broken.
-    let local_text = hms(utc + crate::time::local_offset_seconds());
+    let local = utc + crate::time::local_offset_seconds();
+    let local_text = hms(local);
+    let (date, local_date) = (ymd(utc), ymd(local));
 
     // Scale with the window, but never so large it competes with the scene —
     // and the panel's own paddings scale with the dots, so the whole box grows
@@ -1554,18 +1562,21 @@ fn clock(ui: &egui::Ui, rect: egui::Rect, sim_now: f64, scrubbed: bool) -> Optio
     let label = if scrubbed { tr!("solar-sim") } else { String::from("UTC") };
     let label_size = dotmatrix::size(&label, label_pitch);
     let local_label_size = dotmatrix::size("LOC", label_pitch);
+    // A floor, so the date still reads on a phone-sized view.
+    let date_pitch = (pitch * 0.5).max(1.1);
+    let date_size = dotmatrix::size(&date, date_pitch);
 
     // Both labels share one column to the right of the digits, so UTC and LOC
     // line up however wide the two readouts come out.
     const GAP: f32 = 5.0;
     let label_x = size.x.max(local_size.x) + GAP;
+    let date_x = label_x + label_size.x.max(local_label_size.x) + GAP * 2.0;
     let row_gap = 3.5;
 
     let pad = egui::vec2(6.0, 4.5);
     let panel = egui::Rect::from_min_size(
         rect.left_top() + egui::vec2(MARGIN, MARGIN),
-        egui::vec2(label_x + label_size.x.max(local_label_size.x), size.y + row_gap + local_size.y)
-            + pad * 2.0,
+        egui::vec2(date_x + date_size.x, size.y + row_gap + local_size.y) + pad * 2.0,
     );
     if !rect.contains_rect(panel) {
         return None;
@@ -1595,6 +1606,14 @@ fn clock(ui: &egui::Ui, rect: egui::Rect, sim_now: f64, scrubbed: bool) -> Optio
         on.gamma_multiply(0.6),
         egui::Color32::TRANSPARENT,
     );
+    dotmatrix::draw(
+        p,
+        origin + egui::vec2(date_x, size.y - date_size.y),
+        &date,
+        date_pitch,
+        on.gamma_multiply(0.72),
+        egui::Color32::TRANSPARENT,
+    );
     let local_y = size.y + row_gap;
     dotmatrix::draw(
         p,
@@ -1612,6 +1631,14 @@ fn clock(ui: &egui::Ui, rect: egui::Rect, sim_now: f64, scrubbed: bool) -> Optio
         on.gamma_multiply(0.6),
         egui::Color32::TRANSPARENT,
     );
+    dotmatrix::draw(
+        p,
+        origin + egui::vec2(date_x, local_y + local_size.y - date_size.y),
+        &local_date,
+        date_pitch,
+        on.gamma_multiply(0.72),
+        egui::Color32::TRANSPARENT,
+    );
     Some(panel)
 }
 
@@ -1619,74 +1646,6 @@ fn clock(ui: &egui::Ui, rect: egui::Rect, sim_now: f64, scrubbed: bool) -> Optio
 /// `bottom` and [`MARGIN`] clear of the edge.
 fn bottom_right(rect: egui::Rect, bottom: f32, size: egui::Vec2) -> egui::Rect {
     egui::Rect::from_min_size(egui::pos2(rect.right() - MARGIN - size.x, bottom - size.y), size)
-}
-
-/// The calendar date the clock's time belongs to, UTC over local, in the
-/// bottom-right corner.
-///
-/// The clock deliberately shows only `HH:MM:SS`, which is all you need until
-/// the two zones fall on different days — and then "is that pass tonight or
-/// tomorrow night?" has no answer on screen at all. Scrubbing the timeline
-/// makes it worse: a month of simulated time moves nothing in a readout that
-/// only counts seconds.
-///
-/// Out of the way rather than beside the clock: the date is checked once and
-/// then ignored, while the top of the view is where the menu chips and the space
-/// weather live. Returns the box it drew, so the award key can stack above it.
-fn date_readout(ui: &egui::Ui, st: &SolarUi, rect: egui::Rect, sim_now: f64) -> Option<egui::Rect> {
-    let utc = sim_now as i64;
-    let scrubbed = st.sim_offset_s != 0.0;
-    // The scrubbed instant, like the clock: two readouts of "now" that disagreed
-    // would read as one of them being broken.
-    let rows = [
-        ("UTC", timefmt::dmy(utc)),
-        ("LOC", timefmt::dmy(utc + crate::time::local_offset_seconds())),
-    ];
-
-    let font = egui::FontId::proportional(11.5);
-    let label_font = egui::FontId::proportional(9.5);
-    let on = if scrubbed { theme::YELLOW() } else { theme::CYAN() };
-    let p = ui.painter();
-    let laid: Vec<_> = rows
-        .iter()
-        .map(|(label, date)| {
-            (
-                p.layout_no_wrap((*label).into(), label_font.clone(), theme::CYAN_DIM()),
-                p.layout_no_wrap(date.clone(), font.clone(), on),
-            )
-        })
-        .collect();
-    let label_w = laid.iter().map(|(l, _)| l.size().x).fold(0.0f32, f32::max);
-    let date_w = laid.iter().map(|(_, d)| d.size().x).fold(0.0f32, f32::max);
-    let row_h = laid.iter().map(|(_, d)| d.size().y + 2.0).fold(0.0f32, f32::max);
-
-    // Between the label column and the dates.
-    const COL_GAP: f32 = 8.0;
-    let pad = egui::vec2(10.0, 7.0);
-    let size = egui::vec2(label_w + COL_GAP + date_w, row_h * laid.len() as f32) + pad * 2.0;
-
-    let panel = bottom_right(rect, rect.bottom() - MARGIN, size);
-    if !rect.contains_rect(panel) {
-        return None;
-    }
-
-    p.rect_filled(panel, 0, theme::BG_DEEP().gamma_multiply(0.72));
-    chrome::paint_cut_border(
-        p,
-        panel,
-        if scrubbed { theme::YELLOW() } else { theme::LINE_LIT() },
-        egui::Color32::TRANSPARENT,
-    );
-    let mut y = panel.top() + pad.y;
-    for (label, date) in laid {
-        // Labels on the baseline of the date they name, dates right-aligned so
-        // the two rows line up whatever length the day-of-month comes out.
-        let label_y = y + (row_h - 2.0) - label.size().y;
-        p.galley(egui::pos2(panel.left() + pad.x, label_y), label, theme::CYAN_DIM());
-        p.galley(egui::pos2(panel.right() - pad.x - date.size().x, y), date, on);
-        y += row_h;
-    }
-    Some(panel)
 }
 
 /// The find box, under the clock.
@@ -2712,18 +2671,13 @@ fn interact(ui: &egui::Ui, st: &mut SolarUi, resp: &egui::Response, sim_now: f64
 mod tests {
     use super::*;
 
-    /// The date box sits in the corner itself, and the award key stacks on top
-    /// of whatever it left rather than over it.
+    /// A bottom-right box hangs off the corner, [`MARGIN`] clear of both edges.
     #[test]
-    fn the_bottom_right_stack_grows_upwards_from_the_corner() {
+    fn a_bottom_right_box_sits_in_the_corner() {
         let view = egui::Rect::from_min_size(egui::pos2(0.0, 0.0), egui::vec2(800.0, 600.0));
-        let date = bottom_right(view, view.bottom() - MARGIN, egui::vec2(120.0, 40.0));
-        assert_eq!(date.right(), 788.0);
-        assert_eq!(date.bottom(), 588.0);
-
-        let award = bottom_right(view, date.top() - 8.0, egui::vec2(140.0, 60.0));
-        assert_eq!(award.right(), 788.0, "both boxes hang off the same edge");
-        assert!(award.bottom() <= date.top(), "the key must not sit over the date");
+        let award = bottom_right(view, view.bottom() - MARGIN, egui::vec2(140.0, 60.0));
+        assert_eq!(award.right(), 788.0);
+        assert_eq!(award.bottom(), 588.0);
     }
 
     /// Half a second a line, whatever the line says — which is the whole of the
