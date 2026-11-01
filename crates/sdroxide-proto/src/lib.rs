@@ -1613,7 +1613,13 @@ use sdroxide_types::{
 /// v187: a band-plan sub-segment carries an optional `label` (the operator's
 /// own name for it on the waterfall strip), so the `band_plan` in
 /// `StationConfig` changes layout and both ends have to agree.
-pub const PROTO_VERSION: u16 = 187;
+///
+/// v188: a radio's built-in antenna tuner. [`sdroxide_types::Command`] gains
+/// `AtuTune` and `AtuBypass`, [`sdroxide_types::DeviceCaps`] gains `has_atu`
+/// and [`sdroxide_types::RadioState`] gains `atu`
+/// ([`sdroxide_types::AtuState`]), each on its tail. `DeviceCaps` and
+/// `RadioState` ride whole, so a v187 peer reads the extra bytes out of step.
+pub const PROTO_VERSION: u16 = 188;
 const VERSION_BYTE: u8 = 0x12;
 
 #[derive(Debug, thiserror::Error)]
