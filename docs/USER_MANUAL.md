@@ -7313,7 +7313,7 @@ The file is one row per line, in **megahertz**, and it explains itself in a
 | List | What it sets |
 | --- | --- |
 | `bands` | The allocations. `band` is one of `M160` `M80` `M60` `M40` `M30` `M20` `M17` `M15` `M12` `M10` `M6` `M4` `M2` `M125` `M70` `Cm33` `Cm23` `Cm13` `Cm9` `Cm6` — metres up to 2 m, then the band's own name, and `Cm` from 33 cm up because `M6` was already 6 m. Leave a band out and the region does not have it — with one exception, below. |
-| `segments` | The CW / data / phone / beacon / all-modes blocks on the waterfall strip. `kind` is `Cw`, `Digi`, `Phone`, `Beacon` or `All`. |
+| `segments` | The CW / data / phone / beacon / all-modes blocks on the waterfall strip. `kind` is `Cw`, `Digi`, `Phone`, `Beacon` or `All`; an optional `label` (`"label": "CONTEST"`) names the block on the strip instead of the kind, which still sets its colour. |
 | `psk_windows` | Where the PSK31 skimmer listens. |
 | `rtty_windows` | Where the RTTY skimmer listens. |
 
