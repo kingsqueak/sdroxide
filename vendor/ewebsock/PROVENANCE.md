@@ -17,18 +17,20 @@ binary is GPL as before and upstream's code stays under upstream's terms.
 
 ## What is patched
 
-Two changes.
+Three changes.
 
 **One error classifier**, in `src/native_tungstenite.rs`. The arm of
 `read_from_socket` that recognises a read timeout is factored out into
 `is_read_timeout` and widened by two `raw_os_error` values; a counter
 (`pending_in_a_row`) is threaded from the two caller loops so the widening
 cannot swallow a socket that is genuinely stuck, and one test pins what the
-classifier lets through. Beyond these two changes no upstream line is edited,
+classifier lets through. Beyond these changes and the two `connect_with_config`
+call sites the option below routes through `connect`, no upstream line is edited,
 removed or reordered, and `src/web.rs` — the whole of the wasm client's path —
 is untouched.
 
-Two lines of the manifest change, neither of them about behaviour. The
+Two lines of the manifest change for the build alone (the option below adds
+two more). The
 `include` list is repointed from `../LICENSE-*` to `LICENSE-*`, because the
 licences sit beside the crate here rather than a directory up; and
 `unused_must_use = "allow"` joins upstream's own `[lints.rust]`, because a crate

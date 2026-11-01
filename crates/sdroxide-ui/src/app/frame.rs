@@ -449,8 +449,8 @@ impl eframe::App for SdroxideApp {
                     ui.add_space(4.0);
                     ui.label(
                         RichText::new(
-                            "Compare it with your server's — e.g. `openssl x509 -noout \
-                             -fingerprint -sha256 -in cert.pem` — and trust it only if they \
+                            "Compare it with your server's — e.g. openssl x509 -noout \
+                             -fingerprint -sha256 -in cert.pem — and trust it only if they \
                              match. From then on this exact certificate is accepted from this \
                              server and any other is refused.",
                         )

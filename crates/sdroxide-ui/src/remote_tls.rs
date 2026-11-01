@@ -38,8 +38,13 @@ use crate::remote::RefusedCert;
 /// The pins, by `host:port`. Read from disk once and kept here, because every
 /// tab of a station asks on every frame whether the certificate it was refused
 /// for has since been trusted — by the operator, on another of its tabs.
-static TRUSTED: LazyLock<Mutex<BTreeMap<String, String>>> =
-    LazyLock::new(|| Mutex::new(sdroxide_config::load_trusted_certs()));
+/// A hand-edited pin in openssl's `AB:CD:…` form is normalised on the way in.
+static TRUSTED: LazyLock<Mutex<BTreeMap<String, String>>> = LazyLock::new(|| {
+    let pins = sdroxide_config::load_trusted_certs();
+    Mutex::new(
+        pins.into_iter().map(|(k, v)| (k, v.replace(':', "").to_ascii_lowercase())).collect(),
+    )
+});
 
 /// The public-roots check every certificate meets first. The same roots
 /// tungstenite uses by itself, so a server it accepted is still accepted.
