@@ -862,6 +862,17 @@ socket, no receive aerial and no remote power never sees it.
   ([2.17](#217-running-more-than-one-radio)). Two buttons rather than a switch,
   because a radio that is off answers nothing and there is no position to read
   back.
+- **ATU · TUNE · BYP** — a FLEX with a built-in antenna tuner (8400, 6400M,
+  6600M, …). **TUNE** starts the radio's own tune cycle and **BYP** takes the
+  tuner out of circuit. The chips show only what the radio reports: `TUNING`
+  while it keys its own carrier, **TUNE** lit while the match is in circuit,
+  **BYP** lit while bypassed. A failed tune raises a notice. While the radio is
+  on the air by itself (an ATU tune, SmartSDR, or the front panel) sdroxide
+  mutes the receiver and refuses to key over it.
+- **SWR** — every FLEX, with or without a tuner: a bar and the reading, live
+  while the radio is on the air and dimmed on the last value afterwards, so a
+  tune's result stays visible. Green to 1.5:1, yellow up to the SWR guard's
+  limit, red past it.
 
 These are the same controls that live under **Settings → Radio**
 ([§6.2.2](#622-cat-radios-serial-control--usb-audio)), where the longer explanation of

@@ -16074,6 +16074,10 @@ impl Engine {
         if self.tx_active {
             let _ = self.source.tx_end();
         }
+        // Nor the old link's word that the radio was on the air by itself: the
+        // new one reports only changes, so a stale `true` would keep receive
+        // muted and transmit refused until the radio keyed again.
+        self.adopt_rig_tx(false, "a new interface");
         self.source = source;
         self.receive_mode_seen = None;
         // The old front end's pipeline went with it.
