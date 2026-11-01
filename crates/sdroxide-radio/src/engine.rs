@@ -6357,9 +6357,16 @@ impl Engine {
             // Power levels the rig reports (the operator moved them on the rig,
             // or these are the levels it came up with). Adopted, not overridden:
             // the rig's own setting is what the operator asked for.
+            //
+            // Not while keyed, though: the rig is then on a level this end put it
+            // on for the over (the TUNE level, or the calibrated drive), and
+            // adopting its echo as the Drive slider is what the unkey restores
+            // (#741).
             ControlUpdate::TxDrive(frac) => {
                 let frac = frac.clamp(0.0, 1.0);
-                if self.state.tx.drive != frac {
+                if self.tx_active || self.state.tx.tune {
+                    debug!("rig reported drive {frac:.2} while keyed; not adopted");
+                } else if self.state.tx.drive != frac {
                     self.state.tx.drive = frac;
                     let _ = self.event_tx.send(RadioEvent::State(self.state.clone()));
                 }
