@@ -846,7 +846,7 @@ settings-remote-client-cannot-hold-second-connection = Dieser Client kann keine 
 settings-remote-station-appears-tab-beside-radios =
     Die Station erscheint als Reiter neben den hier bereits geöffneten Funkgeräten, und die Reiterleiste oben im Fenster schaltet zwischen ihnen um (⊞ stellt zwei nebeneinander). Schließen Sie sie über die Liste oben im Reiter Funkgerät — das legt auf; auf dem Server wird nichts verändert.
 
-    Fragt der Server nach Benutzername und Passwort, erscheint seine Anmeldeseite im neuen Reiter. Eine einfache ws://-Verbindung trägt das alles unverschlüsselt; über das offene Internet sollte man sie deshalb entweder durch ein VPN oder einen SSH-Tunnel leiten oder HTTPS vor den Server schalten und oben Sicher ankreuzen.
+    Fragt der Server nach Benutzername und Passwort, erscheint seine Anmeldeseite im neuen Reiter. Eine einfache ws://-Verbindung trägt das alles unverschlüsselt; über das offene Internet sollte man sie deshalb entweder durch ein VPN oder einen SSH-Tunnel leiten oder HTTPS vor den Server schalten und oben Sicher ankreuzen. Ein Proxy mit selbstsigniertem Zertifikat ist kein Problem: Der Reiter des Funkgeräts zeigt dessen Fingerabdruck und fragt, bevor er ihm vertraut.
 
 ## Settings window, Servers (src/app/settings/servers.rs)
 
@@ -2006,7 +2006,7 @@ topbar-diversity-filter-which-way-combines = Der Diversitätsfilter: in welcher 
 topbar-diversity = DIVERSITÄT
 topbar-second-receiver-s-frequency-mode = Die Frequenz, Betriebsart, das Filter und der Pegel des zweiten Empfängers
 topbar-sub-receiver = SUBEMPFÄNGER
-topbar-transceiver-s-own-aerial-socket = Die eigene Antennenbuchse des Transceivers und sein Netzschalter
+topbar-transceiver-s-own-aerial-socket = Die eigene Antennenbuchse des Transceivers, sein Antennentuner und SWR, und sein Netzschalter
 topbar-radio = FUNKGERÄT
 topbar-tune-voice-keyer-drive-mic = Tune, der Sprachkeyer und die Pegel für Aussteuerung und Mikrofon
 topbar-transmit = SENDEN
