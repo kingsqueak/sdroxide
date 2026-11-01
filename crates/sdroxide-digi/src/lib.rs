@@ -1,7 +1,7 @@
 //! Digital-mode engines for sdroxide: the slotted FT8/FT4 and JS8 modes, the
 //! keyboard modems, and the image and voice modes.
 //!
-//! **Licensing:** this crate links `mfsk-core` (GPL-3.0-or-later) and carries
+//! **Licensing:** this crate links `mfsk-core` (GPL-3.0-only since 0.13.1) and carries
 //! the JS8 protocol tables transcribed from JS8Call (also GPL-3.0-or-later).
 //! It is the only crate in the workspace that does either, and it is used only
 //! in the native binary — the wasm remote client links none of it (all
