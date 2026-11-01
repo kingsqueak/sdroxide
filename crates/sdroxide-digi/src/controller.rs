@@ -904,7 +904,16 @@ impl DigiController {
                 self.check_slot_arrived_whole();
                 let min_samples = (self.params.slot_s * DECODE_RATE * 0.5) as usize;
                 if self.slot_buf.len() >= min_samples {
-                    let audio = std::mem::take(&mut self.slot_buf);
+                    let mut audio = std::mem::take(&mut self.slot_buf);
+                    // A short period (a receive gap, e.g. receive stood down
+                    // for a half-duplex over) is padded to the whole period:
+                    // the FT8 decoder's subtraction indexes a whole frame into
+                    // a buffer the length of the audio and panics on a shorter
+                    // one, which takes the decode worker down for the session.
+                    let whole = (self.params.slot_s * DECODE_RATE) as usize;
+                    if audio.len() < whole {
+                        audio.resize(whole, 0);
+                    }
                     let slot_idx = self.last_slot_idx;
                     let slot_utc = self.scheduler.slot_start_unix(slot_idx) as i64;
                     let ap = ApHints {
