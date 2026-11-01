@@ -5463,3 +5463,43 @@ upload-naming-original = Original file name
 wheel-action-zoom = Zoom
 wheel-action-tune = Tune
 wheel-action-none = Nothing
+
+## jtty (src/app/panels/jtty.rs)
+
+jtty-starting-receiver = starting the JTTY receiver…
+jtty-jtty = JTTY
+jtty-receive-audio-level = Receive audio level
+jtty-n-rx = { $n } rx
+jtty-listening-transmissions-start-any-time = Listening. JTTY transmissions start at any time — a message appears here a moment after it is heard.
+jtty-tx = TX
+jtty-sending = {" "}SENDING{" "}
+jtty-tx-2 = {"   "}TX{"   "}
+jtty-call-cq = {" "}CALL CQ{" "}
+jtty-message-sent-once-press-tx = The message is sent once when you press TX — JTTY is asynchronous, so there is no period to wait for and nothing repeats.
+
+## frame, settings/remote, js8, top_bar: certificates, sent JS8, FLEX tuner
+
+frame-certificate-not-signed-authority = The server's certificate is not signed by an authority this client trusts — typically a self-signed one. It presented this certificate (SHA-256):
+frame-compare-certificate-trust-only-if-match = Compare it with your server's — e.g. openssl x509 -noout -fingerprint -sha256 -in cert.pem — and trust it only if they match. From then on this exact certificate is accepted from this server and any other is refused.
+frame-trust-certificate-connect = Trust this certificate and connect
+settings-remote-trusted-certificates = Trusted certificates
+settings-remote-forget = Forget
+settings-remote-forget-hint = Go back to ordinary checking against the public certificate authorities. A server still on this certificate will ask to be trusted again.
+js8-transmitted-by-this-station = Transmitted by this station
+topbar-swr-match-antenna-presents =
+    The match the antenna presents, as the radio measures it — live while the radio is on the air, whoever keyed it: an ATU tune, TUNE, PTT or the radio itself. Dimmed, it is the last reading, from the last over.
+
+    Green to { $good }:1; yellow up to the SWR guard's { $limit }:1; red past it. With an external tuner, bypass the internal one and tune for the shortest bar.
+topbar-atu-idle = No tune since the radio started.
+topbar-atu-tuning = Tuning — the radio is transmitting a carrier into the tuner.
+topbar-atu-tuned-from-memory = Matched, from the tuner's memory for this frequency.
+topbar-atu-tuned = Matched.
+topbar-atu-bypass = Out of circuit.
+topbar-atu-failed = The last tune found no match.
+topbar-atu-aborted = The last tune was cut short.
+topbar-atu-built-in-tuner =
+    The radio's built-in antenna tuner.
+
+    { $state }
+topbar-atu-start-tune = Start a tune. The radio keys itself with a carrier for as long as the match takes, at its tune power (the Tune level), so the antenna must be connected. Lit while the match it found is in circuit.
+topbar-atu-bypass-hint = Take the tuner out of circuit. Lit while it is.

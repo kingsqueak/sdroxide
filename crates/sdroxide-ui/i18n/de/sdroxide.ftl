@@ -5447,3 +5447,43 @@ upload-naming-original = Originaler Dateiname
 wheel-action-zoom = Zoomen
 wheel-action-tune = Abstimmen
 wheel-action-none = Nichts
+
+## jtty (src/app/panels/jtty.rs)
+
+jtty-starting-receiver = JTTY-Empfänger wird gestartet…
+jtty-jtty = JTTY
+jtty-receive-audio-level = Empfangs-Audiopegel
+jtty-n-rx = { $n } empf.
+jtty-listening-transmissions-start-any-time = Empfang läuft. JTTY-Aussendungen beginnen jederzeit — eine Nachricht erscheint hier kurz nachdem sie gehört wurde.
+jtty-tx = TX
+jtty-sending = {" "}SENDET{" "}
+jtty-tx-2 = {"   "}TX{"   "}
+jtty-call-cq = {" "}CQ RUFEN{" "}
+jtty-message-sent-once-press-tx = Die Nachricht wird einmal gesendet, wenn Sie TX drücken — JTTY ist asynchron, es gibt also keine Periode abzuwarten und nichts wiederholt sich.
+
+## frame, settings/remote, js8, top_bar: certificates, sent JS8, FLEX tuner
+
+frame-certificate-not-signed-authority = Das Zertifikat des Servers ist von keiner Stelle signiert, der dieser Client vertraut — meist ist es selbstsigniert. Es hat dieses Zertifikat vorgelegt (SHA-256):
+frame-compare-certificate-trust-only-if-match = Vergleichen Sie es mit dem Ihres Servers — z. B. openssl x509 -noout -fingerprint -sha256 -in cert.pem — und vertrauen Sie ihm nur, wenn beide übereinstimmen. Danach wird genau dieses Zertifikat von diesem Server akzeptiert und jedes andere abgelehnt.
+frame-trust-certificate-connect = Diesem Zertifikat vertrauen und verbinden
+settings-remote-trusted-certificates = Vertrauenswürdige Zertifikate
+settings-remote-forget = Vergessen
+settings-remote-forget-hint = Zurück zur normalen Prüfung gegen die öffentlichen Zertifizierungsstellen. Ein Server, der noch dieses Zertifikat nutzt, fragt erneut nach Vertrauen.
+js8-transmitted-by-this-station = Von dieser Station gesendet
+topbar-swr-match-antenna-presents =
+    Die Anpassung der Antenne, wie das Funkgerät sie misst — live, solange das Funkgerät sendet, egal wer getastet hat: ein ATU-Abstimmlauf, TUNE, PTT oder das Funkgerät selbst. Abgeblendet ist es der letzte Messwert, aus dem letzten Durchgang.
+
+    Grün bis { $good }:1; gelb bis zur Grenze des SWR-Schutzes von { $limit }:1; rot darüber. Mit einem externen Tuner den internen überbrücken und auf den kürzesten Balken abstimmen.
+topbar-atu-idle = Seit dem Start des Funkgeräts keine Abstimmung.
+topbar-atu-tuning = Stimmt ab — das Funkgerät sendet einen Träger in den Tuner.
+topbar-atu-tuned-from-memory = Angepasst, aus dem Speicher des Tuners für diese Frequenz.
+topbar-atu-tuned = Angepasst.
+topbar-atu-bypass = Überbrückt.
+topbar-atu-failed = Die letzte Abstimmung fand keine Anpassung.
+topbar-atu-aborted = Die letzte Abstimmung wurde abgebrochen.
+topbar-atu-built-in-tuner =
+    Der eingebaute Antennentuner des Funkgeräts.
+
+    { $state }
+topbar-atu-start-tune = Eine Abstimmung starten. Das Funkgerät tastet sich selbst mit einem Träger, solange die Anpassung dauert, mit seiner Abstimmleistung (dem Tune-Pegel) — die Antenne muss also angeschlossen sein. Leuchtet, solange die gefundene Anpassung eingeschleift ist.
+topbar-atu-bypass-hint = Den Tuner überbrücken. Leuchtet, solange er überbrückt ist.

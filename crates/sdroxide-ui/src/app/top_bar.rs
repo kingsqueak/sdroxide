@@ -4077,13 +4077,10 @@ impl SdroxideApp {
     /// reading beside it, live while on the air and dimmed afterwards.
     fn swr_bar(ui: &mut egui::Ui, swr: Option<f32>, on_air: bool, limit: f32) {
         use egui::{CornerRadius, Stroke, StrokeKind};
-        let hover = format!(
-            "The match the antenna presents, as the radio measures it — live while the \
-             radio is on the air, whoever keyed it: an ATU tune, TUNE, PTT or the radio \
-             itself. Dimmed, it is the last reading, from the last over.\n\n\
-             Green to {SWR_GOOD:.1}:1; yellow up to the SWR guard's {limit:.1}:1; red past \
-             it. With an external tuner, bypass the internal one and tune for the \
-             shortest bar."
+        let hover = tr!(
+            "topbar-swr-match-antenna-presents",
+            good = format!("{SWR_GOOD:.1}"),
+            limit = format!("{limit:.1}")
         );
         ui.label("SWR").on_hover_text(&hover);
         let h = (ui.text_style_height(&egui::TextStyle::Body) * 0.6).max(6.0);
@@ -4125,32 +4122,26 @@ impl SdroxideApp {
     fn atu_chips(ui: &mut egui::Ui, cmds: &mut Vec<Command>, atu: sdroxide_types::AtuState) {
         use sdroxide_types::AtuStatus;
         let state = match atu.status {
-            AtuStatus::Idle => "No tune since the radio started.",
-            AtuStatus::Tuning => "Tuning — the radio is transmitting a carrier into the tuner.",
-            AtuStatus::Tuned if atu.using_memory => {
-                "Matched, from the tuner's memory for this frequency."
-            }
-            AtuStatus::Tuned => "Matched.",
-            AtuStatus::Bypass => "Out of circuit.",
-            AtuStatus::Failed => "The last tune found no match.",
-            AtuStatus::Aborted => "The last tune was cut short.",
+            AtuStatus::Idle => tr!("topbar-atu-idle"),
+            AtuStatus::Tuning => tr!("topbar-atu-tuning"),
+            AtuStatus::Tuned if atu.using_memory => tr!("topbar-atu-tuned-from-memory"),
+            AtuStatus::Tuned => tr!("topbar-atu-tuned"),
+            AtuStatus::Bypass => tr!("topbar-atu-bypass"),
+            AtuStatus::Failed => tr!("topbar-atu-failed"),
+            AtuStatus::Aborted => tr!("topbar-atu-aborted"),
         };
-        ui.label("ATU").on_hover_text(format!("The radio's built-in antenna tuner.\n\n{state}"));
+        ui.label("ATU").on_hover_text(tr!("topbar-atu-built-in-tuner", state = state));
         let tuning = atu.status == AtuStatus::Tuning;
         let matched = atu.enabled && atu.status == AtuStatus::Tuned;
         let label = if tuning { ATU_TUNING_LABEL } else { ATU_TUNE_LABEL };
         if crate::chrome::chip(ui, tuning || matched, label)
-            .on_hover_text(
-                "Start a tune. The radio keys itself with a carrier for as long as the \
-                 match takes, at its tune power (the Tune level), so the antenna must be \
-                 connected. Lit while the match it found is in circuit.",
-            )
+            .on_hover_text(tr!("topbar-atu-start-tune"))
             .clicked()
         {
             cmds.push(Command::AtuTune);
         }
         if crate::chrome::chip(ui, !atu.enabled, ATU_BYPASS_LABEL)
-            .on_hover_text("Take the tuner out of circuit. Lit while it is.")
+            .on_hover_text(tr!("topbar-atu-bypass-hint"))
             .clicked()
         {
             cmds.push(Command::AtuBypass);

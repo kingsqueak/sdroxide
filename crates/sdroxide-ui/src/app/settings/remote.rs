@@ -149,17 +149,19 @@ fn trusted_certs(ui: &mut egui::Ui) {
         return;
     }
     ui.add_space(10.0);
-    ui.label(RichText::new("Trusted certificates").size(14.0).strong().color(crate::theme::CYAN()));
+    ui.label(
+        RichText::new(tr!("settings-remote-trusted-certificates"))
+            .size(14.0)
+            .strong()
+            .color(crate::theme::CYAN()),
+    );
     ui.add_space(4.0);
     for (authority, sha256) in certs {
         ui.horizontal(|ui| {
             ui.label(RichText::new(&authority).strong());
             if ui
-                .small_button("Forget")
-                .on_hover_text(
-                    "Go back to ordinary checking against the public certificate authorities. \
-                     A server still on this certificate will ask to be trusted again.",
-                )
+                .small_button(tr!("settings-remote-forget"))
+                .on_hover_text(tr!("settings-remote-forget-hint"))
                 .clicked()
                 && let Err(e) = crate::remote_tls::forget(&authority)
             {

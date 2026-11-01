@@ -913,7 +913,7 @@ impl SdroxideApp {
                                             .strong()
                                             .color(crate::theme::GREEN()),
                                     )
-                                    .on_hover_text("Transmitted by this station");
+                                    .on_hover_text(tr!("js8-transmitted-by-this-station"));
                                 }
                                 // Which of the four waveforms carried this.
                                 // Only where it is a question: with one speed
@@ -930,11 +930,13 @@ impl SdroxideApp {
                                             .monospace()
                                             .color(crate::theme::PINK()),
                                     )
-                                    .on_hover_text(if outgoing {
-                                        tr!("js8-sent", speed = m.speed.tr())
-                                    } else {
-                                        tr!("js8-decoded", speed = m.speed.tr())
-                                    });
+                                    .on_hover_text(
+                                        if outgoing {
+                                            tr!("js8-sent", speed = m.speed.tr())
+                                        } else {
+                                            tr!("js8-decoded", speed = m.speed.tr())
+                                        },
+                                    );
                                 }
                                 if to_me {
                                     ui.label(RichText::new("★").color(crate::theme::YELLOW()));

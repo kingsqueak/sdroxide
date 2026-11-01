@@ -435,12 +435,7 @@ impl eframe::App for SdroxideApp {
                 if let Some(fp) = untrusted.as_deref() {
                     ui.add_space(12.0);
                     ui.label(
-                        RichText::new(
-                            "The server's certificate is not signed by an authority this client \
-                             trusts — typically a self-signed one. It presented this certificate \
-                             (SHA-256):",
-                        )
-                        .size(13.0),
+                        RichText::new(tr!("frame-certificate-not-signed-authority")).size(13.0),
                     );
                     ui.add_space(4.0);
                     ui.add(
@@ -454,18 +449,13 @@ impl eframe::App for SdroxideApp {
                     );
                     ui.add_space(4.0);
                     ui.label(
-                        RichText::new(
-                            "Compare it with your server's — e.g. openssl x509 -noout \
-                             -fingerprint -sha256 -in cert.pem — and trust it only if they \
-                             match. From then on this exact certificate is accepted from this \
-                             server and any other is refused.",
-                        )
-                        .size(12.0)
-                        .color(crate::theme::gray(150)),
+                        RichText::new(tr!("frame-compare-certificate-trust-only-if-match"))
+                            .size(12.0)
+                            .color(crate::theme::gray(150)),
                     );
                     ui.add_space(8.0);
                     trust = ui
-                        .button(RichText::new("Trust this certificate and connect").size(16.0))
+                        .button(RichText::new(tr!("frame-trust-certificate-connect")).size(16.0))
                         .clicked();
                 }
                 if offer_retry {

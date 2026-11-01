@@ -13,6 +13,7 @@ use eframe::egui::{self, Color32, RichText};
 use sdroxide_types::{Command, JttyStatus};
 
 use crate::app::{SdroxideApp, tx_gated};
+use crate::i18n::tr;
 use crate::theme;
 
 impl SdroxideApp {
@@ -29,7 +30,7 @@ impl SdroxideApp {
         if let Some(st) = &st {
             self.jtty_log(ui, st, panel_h);
         } else {
-            ui.label(RichText::new("starting the JTTY receiver…").weak());
+            ui.label(RichText::new(tr!("jtty-starting-receiver")).weak());
         }
         self.jtty_tx_row(ui, cmds);
     }
@@ -37,7 +38,7 @@ impl SdroxideApp {
     /// The rolling log of messages heard.
     fn jtty_log(&mut self, ui: &mut egui::Ui, st: &JttyStatus, panel_h: f32) {
         ui.horizontal(|ui| {
-            ui.label(RichText::new("JTTY").strong().color(theme::CYAN()));
+            ui.label(RichText::new(tr!("jtty-jtty")).strong().color(theme::CYAN()));
             // The audio level: an asynchronous mode is bursts between silences,
             // and the meter tells "nothing on the channel" from "nothing
             // decoded".
@@ -46,10 +47,12 @@ impl SdroxideApp {
                     .desired_width(70.0)
                     .fill(theme::CYAN_DIM()),
             )
-            .on_hover_text("Receive audio level");
+            .on_hover_text(tr!("jtty-receive-audio-level"));
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                 ui.label(
-                    RichText::new(format!("{} rx", st.total)).size(10.0).color(theme::gray(120)),
+                    RichText::new(tr!("jtty-n-rx", n = st.total))
+                        .size(10.0)
+                        .color(theme::gray(120)),
                 );
             });
         });
@@ -58,12 +61,7 @@ impl SdroxideApp {
 
         if st.messages.is_empty() {
             ui.label(
-                RichText::new(
-                    "Listening. JTTY transmissions start at any time — a message \
-                     appears here a moment after it is heard.",
-                )
-                .size(10.0)
-                .weak(),
+                RichText::new(tr!("jtty-listening-transmissions-start-any-time")).size(10.0).weak(),
             );
             return;
         }
@@ -115,7 +113,7 @@ impl SdroxideApp {
         ui.add_space(4.0);
         ui.separator();
         ui.horizontal_wrapped(|ui| {
-            ui.label(RichText::new("TX").size(10.5).strong().color(theme::CYAN()));
+            ui.label(RichText::new(tr!("jtty-tx")).size(10.5).strong().color(theme::CYAN()));
             let field = ui.add(
                 egui::TextEdit::singleline(&mut self.text_tx)
                     .desired_width(260.0)
@@ -124,7 +122,7 @@ impl SdroxideApp {
             if field.changed() {
                 cmds.push(Command::DigiTxText(self.text_tx.clone()));
             }
-            let label = if tx_on { " SENDING " } else { "   TX   " };
+            let label = if tx_on { tr!("jtty-sending") } else { tr!("jtty-tx-2") };
             if tx_gated(ui, tx_ok, |ui| {
                 crate::chrome::chip_accent(
                     ui,
@@ -149,7 +147,7 @@ impl SdroxideApp {
                 crate::chrome::chip_accent(
                     ui,
                     false,
-                    RichText::new(" CALL CQ ").size(12.0).strong(),
+                    RichText::new(tr!("jtty-call-cq")).size(12.0).strong(),
                     theme::GREEN(),
                     theme::INK_ON_CYAN(),
                 )
@@ -172,12 +170,9 @@ impl SdroxideApp {
             ui.label(RichText::new(why).size(10.0).color(theme::ALERT()));
         }
         ui.label(
-            RichText::new(
-                "The message is sent once when you press TX — JTTY is asynchronous, \
-                 so there is no period to wait for and nothing repeats.",
-            )
-            .size(9.5)
-            .color(theme::CYAN_DIM()),
+            RichText::new(tr!("jtty-message-sent-once-press-tx"))
+                .size(9.5)
+                .color(theme::CYAN_DIM()),
         );
     }
 }
