@@ -1619,7 +1619,10 @@ use sdroxide_types::{
 /// and [`sdroxide_types::RadioState`] gains `atu`
 /// ([`sdroxide_types::AtuState`]), each on its tail. `DeviceCaps` and
 /// `RadioState` ride whole, so a v187 peer reads the extra bytes out of step.
-pub const PROTO_VERSION: u16 = 188;
+///
+/// v189: [`sdroxide_types::Command`] gains `ClearMemories`, appended; a v188
+/// peer has no variant to decode it into.
+pub const PROTO_VERSION: u16 = 189;
 const VERSION_BYTE: u8 = 0x12;
 
 #[derive(Debug, thiserror::Error)]
