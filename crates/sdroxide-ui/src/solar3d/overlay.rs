@@ -676,11 +676,11 @@ fn scene(ui: &mut egui::Ui, st: &mut SolarUi, data: Option<&SolarData>) {
         return;
     }
     let resp = ui.allocate_rect(rect, egui::Sense::click_and_drag());
-    interact(ui, st, &resp);
+    let sim_now = super::wall_clock_unix() + st.sim_offset_s;
+    interact(ui, st, &resp, sim_now);
 
     let ppp = ui.ctx().pixels_per_point();
     let px = [(rect.width() * ppp).round().max(1.0), (rect.height() * ppp).round().max(1.0)];
-    let sim_now = super::wall_clock_unix() + st.sim_offset_s;
     let anim = ui.input(|i| i.time);
     // One elapsed-time step for everything animated off the wall clock, so the
     // tour and the activity replay cannot disagree about how long a frame was.
@@ -2646,8 +2646,17 @@ fn advance_tour(ui: &egui::Ui, st: &mut SolarUi, data: Option<&SolarData>, sim_n
 /// Drag to rotate, scroll or pinch to zoom, double-click to reframe. Any of them
 /// cancels the animated tour — the user taking the controls is the signal to
 /// stop.
-fn interact(ui: &egui::Ui, st: &mut SolarUi, resp: &egui::Response) {
+fn interact(ui: &egui::Ui, st: &mut SolarUi, resp: &egui::Response, sim_now: f64) {
     let mut touched = false;
+
+    // The camera never draws closer than the focus body's floor, but the tour
+    // can leave the stored distance far inside it. A zoom then only moved that
+    // hidden value, and the wheel seemed dead until a focus chip reframed
+    // (#702). Pulled up to the floor before a zoom applies.
+    let to_floor = |st: &mut SolarUi| {
+        let (_, r) = super::scene::bodies(st, sim_now).focus(st.focus());
+        st.view.dist = st.view.dist.max(super::camera::dist_range(r).0);
+    };
 
     // Two fingers on the scene zoom it: on a screen with no wheel there is no
     // other way to change the camera distance.
@@ -2658,7 +2667,8 @@ fn interact(ui: &egui::Ui, st: &mut SolarUi, resp: &egui::Response) {
     // pinch would spin the camera at the same time as it zoomed.
     let pinch = ui.input(|i| i.multi_touch()).filter(|mt| resp.rect.contains(mt.center_pos));
     if let Some(mt) = pinch {
-        if mt.zoom_delta > 0.0 {
+        if mt.zoom_delta > 0.0 && mt.zoom_delta != 1.0 {
+            to_floor(st);
             // Fingers apart is zoom *in*, i.e. a shorter distance to the focus.
             // Multiplicative like the wheel, so a gesture covers the same visual
             // fraction whether you are 3 Gm or 3 AU out.
@@ -2676,6 +2686,7 @@ fn interact(ui: &egui::Ui, st: &mut SolarUi, resp: &egui::Response) {
     if resp.hovered() {
         let scroll = ui.input(|i| i.smooth_scroll_delta.y);
         if scroll != 0.0 {
+            to_floor(st);
             // Multiplicative, so a wheel click covers the same visual fraction
             // whether you are 3 Gm or 3 AU out.
             st.view.dist *= (1.0 - scroll * 0.0022).clamp(0.4, 2.5);
