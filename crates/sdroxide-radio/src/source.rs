@@ -1023,13 +1023,19 @@ impl ConvertedSource {
     }
 
     /// A station with more than one box in front of it — see [`ConverterPlan`].
-    pub fn with_plan(inner: Box<dyn IqSource>, plan: ConverterPlan) -> Self {
+    pub fn with_plan(mut inner: Box<dyn IqSource>, plan: ConverterPlan) -> Self {
         // Seeded by working *backwards* from where the front end already is.
         // Nothing has told us a dial yet, and the first thing the engine does
         // is read `center_hz()` — so a source that started on a transverter's
         // I.F. has to say so, or the radio comes up on 28 MHz having been
         // opened for 144.
         let step = plan.step_from_hardware(inner.center_hz());
+        // The band decoder follows the dial too, and until a retune it would
+        // otherwise be left on the I.F. (#444).
+        if !step.is_identity() {
+            let dial = inner.center_hz() - step.rx_offset_hz;
+            inner.set_dial_hz(dial);
+        }
         ConvertedSource { inner, plan, step }
     }
 
